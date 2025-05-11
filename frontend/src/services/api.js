@@ -1,19 +1,19 @@
 // src/services/api.js
-const RAW_BASE = import.meta.env.VITE_API_BASE || ''
 
-// strip trailing slash so BASE never ends in “/”
+// grab your base from env, strip any trailing slash
+const RAW_BASE = import.meta.env.VITE_API_BASE || ''
 const BASE = RAW_BASE.replace(/\/$/, '')
 
-export async function get(path) {
-  // always prefix our router path
-  const url = `${BASE}/api/manhwa${path.startsWith('/') ? path : '/' + path}`
-
-  // remove any doubled‐up slash before the “?”
-  const clean = url.replace(/([^:]\/)\/+/g, '$1')
-
-  const res = await fetch(clean)
-  if (!res.ok) {
-    throw new Error(`API ${res.status}: ${res.statusText}`)
-  }
+// core fetch helper
+async function get(path) {
+  // ensure we always hit exactly `/api/manhwa` as the root
+  // and never double-up slashes
+  let url = `${BASE}/api/manhwa${path.startsWith('?') ? '' : '/'}${path}`
+  // collapse any accidental "//" before the "?" or "/" parts
+  url = url.replace(/([^:]\/)\/+/g, '$1')
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`API ${res.status}: ${res.statusText}`)
   return res.json()
 }
+
+export const api = { get }
