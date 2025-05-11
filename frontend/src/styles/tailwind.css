@@ -1,20 +1,20 @@
-/* src/styles/tailwind.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* our custom component overrides */
+/* make our dark background pitch-black/navy and all text light */
 @layer base {
   html.dark {
-    /* default body background/text */
     --tw-bg-opacity: 1;
     background-color: rgba(10,12,24,var(--tw-bg-opacity));
+    --tw-text-opacity: 1;
     color: rgba(229,229,229,var(--tw-text-opacity));
   }
 }
 
+/* component overrides */
 @layer components {
-  /* Links in dark mode should be pure white, no default blue. */
+  /* Links always pure white in dark mode */
   a {
     @apply text-gray-100 no-underline transition-colors;
   }
@@ -22,7 +22,7 @@
     @apply underline text-gray-200;
   }
 
-  /* Inputs/textareas, remove blue ring: */
+  /* Forms */
   input, textarea, select {
     @apply bg-gray-800 text-gray-100 border-gray-700;
   }
@@ -30,8 +30,19 @@
     @apply ring-2 ring-gray-600 ring-offset-0 outline-none;
   }
 
-  /* Horizontal rules get a faint gray: */
+  /* thinner horizontal rules */
   hr {
     @apply border-t border-gray-600;
+  }
+}
+
+/* your spinner override */
+@layer components {
+  .loader {
+    border-top-color: var(--tw-primary);
+    animation: spin 1s ease-in-out infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
 }
