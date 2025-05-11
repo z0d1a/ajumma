@@ -8,26 +8,14 @@ export default function SpotlightCarousel({ items }) {
   const total = items.length
   const slideRefs = useRef([])
 
-  const prev = () => setCurrent((c) => (c + total - 1) % total)
-  const next = () => setCurrent((c) => (c + 1) % total)
+  const prev = () => setCurrent(c => (c + total - 1) % total)
+  const next = () => setCurrent(c => (c + 1) % total)
 
   // autoplay every 3s
   useEffect(() => {
     const timer = setInterval(next, 3000)
     return () => clearInterval(timer)
   }, [total])
-
-  // whenever current changes, scroll that slide into *horizontal* center
-  useEffect(() => {
-    const node = slideRefs.current[current]
-    if (node) {
-      node.scrollIntoView({
-        behavior: 'smooth',
-        inline: 'center',
-        block: 'nearest'      // <-- ensure no vertical scroll
-      })
-    }
-  }, [current])
 
   return (
     <div className="mx-auto space-y-4 shadow-lg">
@@ -50,8 +38,12 @@ export default function SpotlightCarousel({ items }) {
 
         {/* slides viewport */}
         <div
-          className="embla__viewport overflow-x-auto overflow-y-hidden flex items-center space-x-4 px-6
-                     scroll-snap-x snap-mandatory"
+          className="
+            embla__viewport
+            overflow-x-auto overflow-y-hidden
+            flex items-center snap-x snap-mandatory
+            space-x-4 px-screen
+          "
         >
           {items.map((item, idx) => {
             const isCurrent = idx === current
@@ -59,17 +51,17 @@ export default function SpotlightCarousel({ items }) {
             try {
               slug = new URL(item.link).searchParams.get('m') || ''
             } catch {}
-
             return (
               <div
                 key={item.link}
                 ref={el => (slideRefs.current[idx] = el)}
                 data-current={isCurrent}
                 className={`
-                  embla__slide flex-shrink-0
+                  embla__slide
+                  flex-shrink-0
                   w-[200px] h-[200px] lg:w-[280px] lg:h-[280px]
                   rounded-2xl shadow
-                  scroll-snap-align:center
+                  snap-align-center
                   transition-opacity duration-300
                   ${isCurrent
                     ? 'opacity-100 saturate-100'
