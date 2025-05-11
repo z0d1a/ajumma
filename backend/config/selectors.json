@@ -1,0 +1,66 @@
+{
+  "base_url": "https://read.oppai.stream",
+
+  "trending": {
+    "container": ".grid.trending .in-grid.read-over.read-wrap-no",
+    "link":      "a.in-grid-wrap@href",
+    "cover":     "img.read-cover@src",
+    "title":     "h3.man-title",
+    "chapters":  ".wrap-manhwa-stats .wrap-stat-in:nth-of-type(1) h6",
+    "rating":    ".wrap-manhwa-stats .wrap-stat-in:nth-of-type(2) h6"
+  },
+
+  "popular_finished": {
+    "container": "#popular-finished .grid.four-two .in-grid.read-over.read-large",
+    "link":        "a.in-grid-wrap@href",
+    "cover":       "img.read-cover@src",
+    "title":       "div.read-info h3",
+    "chapters":    "div.read-info h6.gray",
+    "description": ".hover-info h6.white.line-3",
+    "genres":      ".hover-info h5.genre-in"
+  },
+
+  "search": {
+    "container": "div.in-grid.read-over.read-wrap-no",
+    "link":      "a.in-grid-wrap@href",
+    "cover":     "img.read-cover@src",
+    "title":     "h3.man-title",
+    "chapters":  ".wrap-manhwa-stats .wrap-stat-in:nth-last-of-type(2) h6",
+    "rating":    ".wrap-manhwa-stats .wrap-stat-in:nth-last-of-type(1) h6",
+    "total":     "#amount-full@amo"
+  },
+
+  "chapters": {
+    "container": ".categories-in.sort-chapters.category-chapters",
+    "item":      "a[ch-num]",
+    "time":      "h6.gray",
+    "title":     "h4.white.line-3"
+  },
+
+  "details": {
+    "container":       ".manhwa-info",
+    "cover":           ".cover img@src",
+    "title":           ".manhwa-info-in h1.bebas.line-3",
+    "status":          ".manhwa-info-in h6.alternative-title",
+    "rating":          ".rated h1.white.bebas.inline",
+    "rating_count":    ".rated h6.white.line-3",
+    "genres":          ".manhwa-info-in .genres h5.genre-in",
+    "description":     ".manhwa-info-in h5.description",
+    "first_chapter":   ".manhwa-info-in .action-sect a.r-first@href",
+    "last_chapter":    ".manhwa-info-in .action-sect a.r-last@href"
+  },
+
+  "pages": {
+    "count_url": "https://myspacecat.pictures/manhwa/images.php?f-m={slug}&c={chapter}",
+    "image_url": "https://myspacecat.pictures/manhwa/{slug}/{chapter}/{i}.jpg"
+  },
+  "newest_releases": {
+    "container": "#recent-site .grid.list-read .in-grid.read-over.read-wrap-no",
+    "link":      "a.in-grid-wrap@href",
+    "cover":     "img.read-cover@src",
+    "time":      "h6.gray",
+    "title":     "h3.man-title",
+    "chapters":  ".wrap-manhwa-stats .wrap-stat-in:nth-of-type(1) h6",
+    "rating":    ".wrap-manhwa-stats .wrap-stat-in:nth-of-type(2) h6"
+  }
+}
