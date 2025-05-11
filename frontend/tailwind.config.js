@@ -1,25 +1,34 @@
+// tailwind.config.js
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',
   content: [
+    // make sure these globs point at your src + wherever your HTML lives
     './index.html',
     './src/**/*.{js,jsx,ts,tsx}'
   ],
   theme: {
     extend: {
-      // === 1. NEW PALETTE ===
       colors: {
-        background: {
-          DEFAULT: '#0A0F1B', // your new page background
-          dark:    '#0A0F1B',
+        // override “blue” so even if something uses “blue-500” it’s gray
+        blue: {
+          50:  '#f9f9f9',
+          100: '#f0f0f0',
+          200: '#dcdcdc',
+          300: '#bfbfbf',
+          400: '#999999',
+          500: '#737373',
+          600: '#595959',
+          700: '#404040',
+          800: '#2e2e2e',
+          900: '#1c1c1c',
         },
-        card: '#121826',       // surfaces (cards, panels)
-        border: '#1E2333',     // hr / divider lines
-        'text-base':  '#D1D5DB', // primary copy
-        'text-light': '#F0F2F5', // accents / headings
+        // you can also add “primary” or “accent” colors if you use them:
+        primary: {
+          DEFAULT: '#e5e5e5', // almost-white
+          dark:    '#b3b3b3',
+        }
       },
-
-      // === 2. EXISTING ANIMATIONS ===
       keyframes: {
         fadeIn: {
           '0%': { opacity: 0, transform: 'translateY(10px)' },
@@ -29,9 +38,11 @@ module.exports = {
       animation: {
         fadeIn: 'fadeIn 0.5s ease-out both'
       }
-    }
+    },
   },
   plugins: [
-    require('tailwind-scrollbar-hide')
+    require('tailwind-scrollbar-hide'),
+    // if you need custom forms styles
+    require('@tailwindcss/forms'),
   ],
 }

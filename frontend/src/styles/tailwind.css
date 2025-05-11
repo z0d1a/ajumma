@@ -1,42 +1,37 @@
+/* src/styles/tailwind.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ==========================================================================
-   0. Reset & global
-   ========================================================================== */
+/* our custom component overrides */
 @layer base {
-  html {
-    background-color: theme('colors.background');
-  }
-  body {
-    color: theme('colors.text-base');
-    background-color: theme('colors.background');
+  html.dark {
+    /* default body background/text */
+    --tw-bg-opacity: 1;
+    background-color: rgba(10,12,24,var(--tw-bg-opacity));
+    color: rgba(229,229,229,var(--tw-text-opacity));
   }
 }
 
-/* ==========================================================================
-   1. Component: loader (spin)
-   ========================================================================== */
 @layer components {
-  .loader {
-    border-top-color: theme('colors.text-light'); /* was blue, now bright */
-    animation: spin 1s ease-in-out infinite;
+  /* Links in dark mode should be pure white, no default blue. */
+  a {
+    @apply text-gray-100 no-underline transition-colors;
   }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
+  a:hover {
+    @apply underline text-gray-200;
   }
-}
 
-/* ==========================================================================
-   2. Utility overrides
-   ========================================================================== */
-/* Your divider lines */
-.hr-border {
-  border-color: theme('colors.border');
-}
+  /* Inputs/textareas, remove blue ring: */
+  input, textarea, select {
+    @apply bg-gray-800 text-gray-100 border-gray-700;
+  }
+  input:focus, textarea:focus, select:focus {
+    @apply ring-2 ring-gray-600 ring-offset-0 outline-none;
+  }
 
-/* If you want a default “card” background class */
-.bg-card {
-  background-color: theme('colors.card');
+  /* Horizontal rules get a faint gray: */
+  hr {
+    @apply border-t border-gray-600;
+  }
 }
