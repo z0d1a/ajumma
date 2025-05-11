@@ -1,14 +1,42 @@
-/* src/styles/tailwind.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ==========================================================================
+   0. Reset & global
+   ========================================================================== */
+@layer base {
+  html {
+    background-color: theme('colors.background');
+  }
+  body {
+    color: theme('colors.text-base');
+    background-color: theme('colors.background');
+  }
+}
+
+/* ==========================================================================
+   1. Component: loader (spin)
+   ========================================================================== */
 @layer components {
   .loader {
-    border-top-color: #3490dc;
+    border-top-color: theme('colors.text-light'); /* was blue, now bright */
     animation: spin 1s ease-in-out infinite;
   }
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
+}
+
+/* ==========================================================================
+   2. Utility overrides
+   ========================================================================== */
+/* Your divider lines */
+.hr-border {
+  border-color: theme('colors.border');
+}
+
+/* If you want a default “card” background class */
+.bg-card {
+  background-color: theme('colors.card');
 }
