@@ -1,23 +1,19 @@
 // src/services/api.js
-
-// your existing base (e.g. http://localhost:8000 or production URL)
 const RAW_BASE = import.meta.env.VITE_API_BASE || ''
 
-// trim any trailing slash
+// strip trailing slash so BASE never ends in “/”
 const BASE = RAW_BASE.replace(/\/$/, '')
 
-async function get(path) {
-  // ensure we always hit /api/manhwa/<path>
-  const url =
-    BASE +
-    '/api/manhwa' +
-    (path.startsWith('/') ? path : '/' + path)
+export async function get(path) {
+  // always prefix our router path
+  const url = `${BASE}/api/manhwa${path.startsWith('/') ? path : '/' + path}`
 
-  const res = await fetch(url)
+  // remove any doubled‐up slash before the “?”
+  const clean = url.replace(/([^:]\/)\/+/g, '$1')
+
+  const res = await fetch(clean)
   if (!res.ok) {
     throw new Error(`API ${res.status}: ${res.statusText}`)
   }
   return res.json()
 }
-
-export const api = { get }
