@@ -3,8 +3,8 @@ module.exports = {
   darkMode: 'class',
   content: [
     // adjust these to wherever your index.html lives and your source
-    './frontend/index.html',
-    './frontend/src/**/*.{js,jsx,ts,tsx}',
+    './index.html',
+    './src/**/*.{js,jsx,ts,tsx}',
   ],
   theme: {
     extend: {
