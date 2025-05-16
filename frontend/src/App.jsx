@@ -1,6 +1,6 @@
+// src/App.jsx
 import React, { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Navbar      from './components/Navbar.jsx'
 import Home        from './components/Home.jsx'
 import SearchPage  from './components/SearchPage.jsx'
@@ -10,19 +10,18 @@ import Library     from './components/Library.jsx'
 import ScrollToTop from './components/ScrollToTop.jsx'
 
 export default function App() {
-  // ——— Dark mode (persisted to localStorage) ———
+  // — Dark mode setup —
   const [dark, setDark] = useState(
-    () =>
-      localStorage.theme === 'dark' ||
-      (!('theme' in localStorage) &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches)
+    () => localStorage.theme === 'dark'
+      || (!('theme' in localStorage)
+          && window.matchMedia('(prefers-color-scheme: dark)').matches)
   )
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
     localStorage.theme = dark ? 'dark' : 'light'
   }, [dark])
 
-  // ——— Library / bookmarks (persisted to localStorage) ———
+  // — Library state (persisted in localStorage) —
   const [library, setLibrary] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('library')) || []
@@ -35,23 +34,18 @@ export default function App() {
   }, [library])
 
   return (
-      <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
-        {/* pass dark-mode controls + library count into Navbar */}
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
         <Navbar
           darkMode={dark}
           toggleDarkMode={() => setDark(d => !d)}
-          libraryCount={library.length}
         />
 
-        <main className="flex-1 container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8">
           <Routes>
-            {/* Home */}
             <Route path="/" element={<Home />} />
-
-            {/* Search */}
             <Route path="/search" element={<SearchPage />} />
 
-            {/* Details (needs library & setter) */}
+            {/* pass library into Details so your bookmark button works */}
             <Route
               path="/manhwa/:slug"
               element={
@@ -62,13 +56,9 @@ export default function App() {
               }
             />
 
-            {/* Reader */}
-            <Route
-              path="/chapters/:slug/:chap"
-              element={<Reader />}
-            />
+            <Route path="/chapters/:slug/:chap" element={<Reader />} />
 
-            {/* Library */}
+            {/* pass library into Library so it can render your saved items */}
             <Route
               path="/library"
               element={
@@ -78,9 +68,6 @@ export default function App() {
                 />
               }
             />
-
-            {/* Catch-all → home */}
-            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
 
