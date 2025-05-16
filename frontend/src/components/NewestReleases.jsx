@@ -22,7 +22,7 @@ export default function NewestReleases({ items }) {
               to={`/manhwa/${slug}`}
               className="block h-fit"
             >
-              <div className="rounded-lg border bg-card text-card-foreground shadow-sm group relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
+              <div className="rounded-lg bg-card text-card-foreground shadow-sm group relative overflow-hidden transition-transform duration-300 ease-in-out hover:scale-105">
                 {/* image */}
                 <img
                   src={item.cover_url}
