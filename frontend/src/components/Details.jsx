@@ -2,6 +2,8 @@ import { Fragment, useEffect, useState } from 'react'
 import { useParams, Link }           from 'react-router-dom'
 import { Tab }                       from '@headlessui/react'
 import { StarIcon }                  from '@heroicons/react/24/solid'
+import { BookmarkIcon as BookmarkEmptyIcon } from '@heroicons/react/24/outline'
+import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
 import { api }                       from '../services/api.js'
 
 function classNames(...classes) {
@@ -87,12 +89,13 @@ export default function Details({ library, setLibrary }) {
           </Link>
           <button
             onClick={toggleLibrary}
-            className={classNames(
-              'px-4 py-2 rounded font-medium transition',
-              inLibrary ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
-            )}
+            aria-label={inLibrary ? 'Remove from Library' : 'Add to Library'}
+            className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
           >
-            {inLibrary ? 'Remove from Library' : 'Add to Library'}
+            {inLibrary
+              ? <BookmarkSolidIcon className="w-6 h-6 text-yellow-300" />
+              : <BookmarkEmptyIcon className="w-6 h-6 text-gray-200" />
+            }
           </button>
         </div>
 
