@@ -1,4 +1,3 @@
-// src/components/Details.jsx
 import { Fragment, useEffect, useState } from 'react'
 import { useParams, Link }           from 'react-router-dom'
 import { Tab }                       from '@headlessui/react'
@@ -9,13 +8,14 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Details() {
+export default function Details({ library, setLibrary }) {
   const { slug } = useParams()
   const [detail, setDetail]     = useState(null)
   const [chapters, setChapters] = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
 
+  // fetch manhwa metadata + chapters
   useEffect(() => {
     setLoading(true)
     Promise.all([
@@ -29,6 +29,24 @@ export default function Details() {
       .catch(() => setError('Failed to load manhwa data.'))
       .finally(() => setLoading(false))
   }, [slug])
+
+  // determine if current slug is in library
+  const inLibrary = library.some(item => item.slug === slug)
+  const toggleLibrary = () => {
+    if (!detail) return
+    if (inLibrary) {
+      setLibrary(lib => lib.filter(item => item.slug !== slug))
+    } else {
+      setLibrary(lib => [
+        ...lib,
+        {
+          slug,
+          title: detail.title,
+          cover_url: detail.cover_url
+        }
+      ])
+    }
+  }
 
   if (loading) {
     return (
@@ -44,7 +62,7 @@ export default function Details() {
 
   return (
     <div className="relative">
-      {/* Blurred backdrop */}
+      {/* Blurred, darkened backdrop */}
       <div
         className="absolute inset-0 bg-cover bg-center filter blur-xl scale-105"
         style={{ backgroundImage: `url(${detail.cover_url})` }}
@@ -52,9 +70,25 @@ export default function Details() {
       <div className="absolute inset-0 bg-black/60" />
 
       <div className="relative max-w-5xl mx-auto px-4 py-12 text-white space-y-8">
-        <Link to="/" className="text-gray-300 hover:text-white">&larr; Back to Home</Link>
+        {/* Back + Library toggle */}
+        <div className="flex items-center justify-between">
+          <Link to="/" className="text-gray-300 hover:text-white">
+            &larr; Back to Home
+          </Link>
+          <button
+            onClick={toggleLibrary}
+            className={classNames(
+              'px-4 py-2 rounded font-medium transition',
+              inLibrary
+                ? 'bg-red-600 hover:bg-red-700'
+                : 'bg-green-600 hover:bg-green-700'
+            )}
+          >
+            {inLibrary ? 'Remove from Library' : 'Add to Library'}
+          </button>
+        </div>
 
-        {/* Poster + Meta */}
+        {/* Cover + Info */}
         <div className="md:flex md:space-x-8 items-start">
           <div className="flex-shrink-0">
             <img
@@ -75,10 +109,7 @@ export default function Details() {
             <div className="flex flex-wrap gap-2">
               <span className="px-2 py-1 bg-green-600 rounded text-xs">ONGOING</span>
               {detail.genres.map((g,i) => (
-                <span
-                  key={i}
-                  className="px-2 py-1 bg-gray-700 rounded text-xs"
-                >
+                <span key={i} className="px-2 py-1 bg-gray-700 rounded text-xs">
                   {g}
                 </span>
               ))}
@@ -103,7 +134,7 @@ export default function Details() {
           </div>
         </div>
 
-        {/* Tabs */}
+        {/* Chapter List / Notices Tabs */}
         <Tab.Group>
           <Tab.List className="flex space-x-4 border-b border-gray-600">
             {['Chapters list','Notices'].map(tab => (
@@ -122,6 +153,7 @@ export default function Details() {
               </Tab>
             ))}
           </Tab.List>
+
           <Tab.Panels className="mt-6">
             <Tab.Panel>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -144,5 +176,5 @@ export default function Details() {
         </Tab.Group>
       </div>
     </div>
-)
+  )
 }
