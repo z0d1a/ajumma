@@ -79,7 +79,7 @@ export default function Reader() {
         <div className="flex justify-center py-12 px-4">
           <div
             className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl overflow-hidden"
-            style={{ maxWidth: 800, width: '100%' }}
+            style={{ maxWidth: 550, width: '100%' }}
           >
             <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
               {pages.map((p,i) => (
@@ -102,7 +102,7 @@ export default function Reader() {
       </div>
 
       {/* zoom controls */}
-      <div className="fixed bottom-6 left-6 z-50 flex items-center space-x-2 bg-gray-800 bg-opacity-80 rounded-lg p-1">
+      <div className="fixed bottom-3 left-6 z-50 flex items-center space-x-2 bg-gray-800 bg-opacity-80 rounded-lg p-1">
         <button
           onClick={zoomOut}
           className="p-2 hover:bg-gray-700 rounded transition"
