@@ -1,4 +1,3 @@
-// src/components/Details.jsx
 import { Fragment, useEffect, useState } from 'react'
 import { useParams, Link }           from 'react-router-dom'
 import { Tab }                       from '@headlessui/react'
@@ -16,37 +15,36 @@ export default function Details({ library, setLibrary }) {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
 
-  // load manhwa detail + chapter list
+  // fetch metadata & chapter list
   useEffect(() => {
     setLoading(true)
+    setError(null)
     Promise.all([
       api.get(`?m=${encodeURIComponent(slug)}`),
       api.get(`/chapters?m=${encodeURIComponent(slug)}`)
     ])
       .then(([dRes, cRes]) => {
-        setDetail(dRes.data ?? dRes)
+        const d = dRes.data ?? dRes
+        setDetail(d)
         setChapters(cRes.data ?? cRes)
       })
       .catch(() => setError('Failed to load manhwa data.'))
       .finally(() => setLoading(false))
   }, [slug])
 
-  // check if we’ve already bookmarked this series
-  const inLibrary = library.some(item => item.slug === slug)
-
-  // toggle add/remove
-  const toggleLibrary = () => {
+  // library toggle
+  const inLibrary = Array.isArray(library) && library.some(item => item.slug === slug)
+  function toggleLibrary() {
     if (!detail) return
-
     if (inLibrary) {
       setLibrary(lib => lib.filter(item => item.slug !== slug))
     } else {
       setLibrary(lib => [
-        ...lib,
+        ...(lib || []),
         {
           slug,
-          title: detail.title,
-          cover_url: detail.cover_url
+          title: detail.title || slug.replace(/-/g,' '),
+          cover_url: detail.cover_url || ''
         }
       ])
     }
@@ -64,97 +62,112 @@ export default function Details({ library, setLibrary }) {
     return <p className="text-center text-red-500">{error}</p>
   }
 
+  // once loaded, guard against missing detail
+  if (!detail) {
+    return <p className="text-center text-gray-400">No detail to show.</p>
+  }
+
+  // avoid crash if genres missing
+  const genres = Array.isArray(detail.genres) ? detail.genres : []
+
   return (
     <div className="relative">
       {/* blurred backdrop */}
       <div
         className="absolute inset-0 bg-cover bg-center filter blur-xl scale-105"
-        style={{ backgroundImage: `url(${detail.cover_url})` }}
+        style={{ backgroundImage: `url(${detail.cover_url || ''})` }}
       />
       <div className="absolute inset-0 bg-black/60" />
 
       <div className="relative max-w-5xl mx-auto px-4 py-12 text-white space-y-8">
-        {/* Back link + library toggle */}
+        {/* back & library button */}
         <div className="flex items-center justify-between">
           <Link to="/" className="text-gray-300 hover:text-white">
-            ← Back to Home
+            &larr; Back to Home
           </Link>
           <button
             onClick={toggleLibrary}
             className={classNames(
               'px-4 py-2 rounded font-medium transition',
-              inLibrary
-                ? 'bg-red-600 hover:bg-red-700'
-                : 'bg-green-600 hover:bg-green-700'
+              inLibrary ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'
             )}
           >
             {inLibrary ? 'Remove from Library' : 'Add to Library'}
           </button>
         </div>
 
-        {/* Cover + meta */}
+        {/* cover + info */}
         <div className="md:flex md:space-x-8 items-start">
           <img
             src={detail.cover_url}
             alt={detail.title}
-            className="w-48 md:w-64 rounded-lg shadow-2xl ring-4 ring-black/70 flex-shrink-0"
+            className="w-48 md:w-64 rounded-lg shadow-2xl ring-4 ring-black/70"
           />
           <div className="mt-6 md:mt-0 flex-1 space-y-4">
             <h1 className="text-4xl font-bold">{detail.title}</h1>
             <div className="flex items-center space-x-2">
               <StarIcon className="w-6 h-6 text-yellow-400" />
-              <span className="text-lg">{detail.rating.toFixed(1)}</span>
+              <span className="text-lg">
+                {typeof detail.rating === 'number'
+                  ? detail.rating.toFixed(1)
+                  : '—'}
+              </span>
             </div>
             {detail.updated_at && (
               <p className="italic text-gray-300">{detail.updated_at}</p>
             )}
             <div className="flex flex-wrap gap-2">
-              <span className="px-2 py-1 bg-green-600 rounded text-xs">ONGOING</span>
-              {detail.genres.map((g, i) => (
+              {detail.status && (
+                <span className="px-2 py-1 bg-indigo-600 rounded text-xs">
+                  {detail.status.toUpperCase()}
+                </span>
+              )}
+              {genres.map((g, i) => (
                 <span key={i} className="px-2 py-1 bg-gray-700 rounded text-xs">
                   {g}
                 </span>
               ))}
             </div>
             <p className="text-gray-200 leading-relaxed">
-              {detail.description || 'Details for this Manhwa are coming soon!'}
+              {detail.description || 'No description available.'}
             </p>
             <dl className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm text-gray-300">
               <dt className="font-medium">Release year</dt>
               <dd>{detail.release_year ?? '—'}</dd>
-              <dt className="font-medium">Total views</dt>
+              <dt className="font-medium">Views</dt>
               <dd>{detail.views ?? '—'}</dd>
               <dt className="font-medium">Author</dt>
               <dd>{detail.author ?? '—'}</dd>
               <dt className="font-medium">Chapters</dt>
-              <dd>{detail.chapters}</dd>
+              <dd>{detail.chapters ?? '—'}</dd>
               <dt className="font-medium">Bookmarks</dt>
               <dd>{detail.bookmarks ?? 0}</dd>
             </dl>
           </div>
         </div>
 
-        {/* tabs: chapters list / notices */}
+        {/* tabs */}
         <Tab.Group>
           <Tab.List className="flex space-x-4 border-b border-gray-600">
-            {['Chapters list', 'Notices'].map(tab => (
+            {['Chapters','Notices'].map(label => (
               <Tab
-                key={tab}
+                key={label}
                 className={({ selected }) =>
                   classNames(
-                    'py-2 px-4 -mb-px',
+                    'py-2 px-4 -mb-px cursor-pointer',
                     selected
                       ? 'border-b-2 border-red-500 text-white'
                       : 'text-gray-400 hover:text-white'
                   )
                 }
               >
-                {tab}
+                {label}
               </Tab>
             ))}
           </Tab.List>
 
           <Tab.Panels className="mt-6">
+            {/* chapters list */}
             <Tab.Panel>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {chapters.map(ch => (
@@ -164,13 +177,17 @@ export default function Details({ library, setLibrary }) {
                     className="block p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition"
                   >
                     <h3 className="text-md font-medium">{ch.title}</h3>
-                    <p className="text-xs text-gray-400 mt-1">{ch.released_at}</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {ch.released_at}
+                    </p>
                   </Link>
                 ))}
               </div>
             </Tab.Panel>
+
+            {/* notices */}
             <Tab.Panel>
-              <p className="text-gray-300">No notices yet.</p>
+              <p className="text-gray-300">No notices at this time.</p>
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>

@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 
@@ -53,7 +52,7 @@ export default function App() {
             {/* Search */}
             <Route path="/search" element={<SearchPage />} />
 
-            {/* Details needs both library & setter */}
+            {/* Details (needs library & setter) */}
             <Route
               path="/manhwa/:slug"
               element={
@@ -64,13 +63,13 @@ export default function App() {
               }
             />
 
-            {/* Reader (no changes) */}
+            {/* Reader */}
             <Route
               path="/chapters/:slug/:chap"
               element={<Reader />}
             />
 
-            {/* Library page needs library & setter too */}
+            {/* Library */}
             <Route
               path="/library"
               element={
