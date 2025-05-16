@@ -1,11 +1,11 @@
-// src/components/Navbar.jsx
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   MoonIcon,
   SunIcon,
   MagnifyingGlassIcon,
-  XMarkIcon
+  XMarkIcon,
+  BookmarkIcon,
 } from '@heroicons/react/24/solid'
 
 export default function Navbar({ darkMode, toggleDarkMode }) {
@@ -44,16 +44,21 @@ export default function Navbar({ darkMode, toggleDarkMode }) {
           ajumma.
         </Link>
 
-        {/* dark/light toggle on right */}
-        <button
-          onClick={toggleDarkMode}
-          className="absolute top-1/2 right-4 -translate-y-1/2 p-2 rounded-full hover:bg-gray-800 transition"
-          aria-label="Toggle dark mode"
-        >
-          {darkMode
-            ? <SunIcon className="w-6 h-6 text-gray-200" />
-            : <MoonIcon className="w-6 h-6 text-gray-200" />}
-        </button>
+        {/* library icon next to dark toggle */}
+        <div className="absolute top-1/2 right-12 -translate-y-1/2 flex space-x-2">
+          <Link to="/library" aria-label="Library">
+            <BookmarkIcon className="w-6 h-6 text-gray-200 hover:text-white transition" />
+          </Link>
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 rounded-full hover:bg-gray-800 transition"
+            aria-label="Toggle dark mode"
+          >
+            {darkMode
+              ? <SunIcon className="w-6 h-6 text-gray-200" />
+              : <MoonIcon className="w-6 h-6 text-gray-200" />}
+          </button>
+        </div>
       </nav>
 
       {/* Spotlight search overlay */}

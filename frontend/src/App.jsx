@@ -5,6 +5,7 @@ import Home        from './components/Home.jsx'
 import SearchPage  from './components/SearchPage.jsx'
 import Details     from './components/Details.jsx'
 import Reader      from './components/Reader.jsx'
+import Library     from './components/Library.jsx'
 import ScrollToTop from './components/ScrollToTop.jsx'
 
 export default function App() {
@@ -51,6 +52,12 @@ export default function App() {
             }
           />
           <Route path="/chapters/:slug/:chap" element={<Reader />} />
+
+          {/* new library route */}
+          <Route
+            path="/library"
+            element={<Library />}
+          />
         </Routes>
       </main>
 
