@@ -1,3 +1,4 @@
+// src/components/Details.jsx
 import { Fragment, useEffect, useState } from 'react'
 import { useParams, Link }           from 'react-router-dom'
 import { Tab }                       from '@headlessui/react'
@@ -15,7 +16,7 @@ export default function Details({ library, setLibrary }) {
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
 
-  // fetch manhwa metadata + chapters
+  // load manhwa detail + chapter list
   useEffect(() => {
     setLoading(true)
     Promise.all([
@@ -30,10 +31,13 @@ export default function Details({ library, setLibrary }) {
       .finally(() => setLoading(false))
   }, [slug])
 
-  // determine if current slug is in library
+  // check if we’ve already bookmarked this series
   const inLibrary = library.some(item => item.slug === slug)
+
+  // toggle add/remove
   const toggleLibrary = () => {
     if (!detail) return
+
     if (inLibrary) {
       setLibrary(lib => lib.filter(item => item.slug !== slug))
     } else {
@@ -62,7 +66,7 @@ export default function Details({ library, setLibrary }) {
 
   return (
     <div className="relative">
-      {/* Blurred, darkened backdrop */}
+      {/* blurred backdrop */}
       <div
         className="absolute inset-0 bg-cover bg-center filter blur-xl scale-105"
         style={{ backgroundImage: `url(${detail.cover_url})` }}
@@ -70,10 +74,10 @@ export default function Details({ library, setLibrary }) {
       <div className="absolute inset-0 bg-black/60" />
 
       <div className="relative max-w-5xl mx-auto px-4 py-12 text-white space-y-8">
-        {/* Back + Library toggle */}
+        {/* Back link + library toggle */}
         <div className="flex items-center justify-between">
           <Link to="/" className="text-gray-300 hover:text-white">
-            &larr; Back to Home
+            ← Back to Home
           </Link>
           <button
             onClick={toggleLibrary}
@@ -88,15 +92,13 @@ export default function Details({ library, setLibrary }) {
           </button>
         </div>
 
-        {/* Cover + Info */}
+        {/* Cover + meta */}
         <div className="md:flex md:space-x-8 items-start">
-          <div className="flex-shrink-0">
-            <img
-              src={detail.cover_url}
-              alt={detail.title}
-              className="w-48 md:w-64 rounded-lg shadow-2xl ring-4 ring-black/70"
-            />
-          </div>
+          <img
+            src={detail.cover_url}
+            alt={detail.title}
+            className="w-48 md:w-64 rounded-lg shadow-2xl ring-4 ring-black/70 flex-shrink-0"
+          />
           <div className="mt-6 md:mt-0 flex-1 space-y-4">
             <h1 className="text-4xl font-bold">{detail.title}</h1>
             <div className="flex items-center space-x-2">
@@ -108,16 +110,14 @@ export default function Details({ library, setLibrary }) {
             )}
             <div className="flex flex-wrap gap-2">
               <span className="px-2 py-1 bg-green-600 rounded text-xs">ONGOING</span>
-              {detail.genres.map((g,i) => (
+              {detail.genres.map((g, i) => (
                 <span key={i} className="px-2 py-1 bg-gray-700 rounded text-xs">
                   {g}
                 </span>
               ))}
             </div>
             <p className="text-gray-200 leading-relaxed">
-              {detail.description
-                ? detail.description
-                : 'Details for this Manhwa are coming soon!'}
+              {detail.description || 'Details for this Manhwa are coming soon!'}
             </p>
             <dl className="grid grid-cols-2 gap-x-8 gap-y-4 text-sm text-gray-300">
               <dt className="font-medium">Release year</dt>
@@ -134,10 +134,10 @@ export default function Details({ library, setLibrary }) {
           </div>
         </div>
 
-        {/* Chapter List / Notices Tabs */}
+        {/* tabs: chapters list / notices */}
         <Tab.Group>
           <Tab.List className="flex space-x-4 border-b border-gray-600">
-            {['Chapters list','Notices'].map(tab => (
+            {['Chapters list', 'Notices'].map(tab => (
               <Tab
                 key={tab}
                 className={({ selected }) =>
