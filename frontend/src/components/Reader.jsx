@@ -2,33 +2,29 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { api } from '../services/api.js'
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from '@heroicons/react/24/solid'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/solid'
 
 export default function Reader() {
   const { slug, chap } = useParams()
   const navigate = useNavigate()
   const chapter = parseInt(chap, 10)
 
-  const [pages, setPages]           = useState([])
-  const [totalChapters, setTotal]   = useState(0)
-  const [detail, setDetail]         = useState(null)
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState(null)
+  const [pages, setPages]         = useState([])
+  const [totalChapters, setTotal] = useState(0)
+  const [detail, setDetail]       = useState(null)
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
 
   // zoom state (0.5–2.0)
   const [zoom, setZoom] = useState(1)
   const zoomIn  = () => setZoom(z => Math.min(2, z + 0.1))
   const zoomOut = () => setZoom(z => Math.max(0.5, z - 0.1))
 
-  // fetch pages for this chapter
+  // fetch pages
   useEffect(() => {
     if (!slug || !chapter) return
     setLoading(true)
     setError(null)
-
     api.get(`/page?m=${encodeURIComponent(slug)}&c=${chapter}`)
       .then(res => {
         const arr = Array.isArray(res.data) ? res.data : res
@@ -38,26 +34,21 @@ export default function Reader() {
       .finally(() => setLoading(false))
   }, [slug, chapter])
 
-  // fetch series detail (title + totalChapters)
+  // fetch detail (title + totalChapters)
   useEffect(() => {
     if (!slug) return
-
     api.get(`?m=${encodeURIComponent(slug)}`)
       .then(res => {
         const d = res.data ?? res
         setTotal(d.chapters)
         setDetail(d)
       })
-      .catch(() => {
-        // swallow: we’ll still show pages even if detail fails
-      })
+      .catch(() => {/* ignore */})
   }, [slug])
 
-  // navigation helpers
   const prevChap = chapter > 1 ? chapter - 1 : null
   const nextChap = chapter + 1
 
-  // loading / error states
   if (loading) {
     return (
       <div className="flex flex-col items-center py-20 space-y-4">
@@ -80,6 +71,7 @@ export default function Reader() {
   return (
     <main
       className="
+        group relative
         bg-gray-100 dark:bg-gray-900
         flex-1 flex flex-col
         md:border-t md:rounded-tl-xl md:border-l
@@ -88,11 +80,11 @@ export default function Reader() {
       "
       style={{ scrollbarGutter: 'auto' }}
     >
-      {/* image scroll area */}
+      {/* pages scroll area */}
       <div className="flex-grow overflow-x-hidden">
         <div
           id="reader"
-          className="flex flex-col items-center bg-transparent overflow-auto space-y-8 px-4 py-8"
+          className="flex flex-col items-center overflow-auto space-y-8 px-4 py-8"
         >
           {pages.map((p, i) => (
             <img
@@ -110,63 +102,7 @@ export default function Reader() {
         </div>
       </div>
 
-      {/* sticky footer */}
-      <div className="bg-gray-100 dark:bg-gray-900 border-t border-gray-700 px-4 py-3">
-        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          {/* Title + mobile select */}
-          <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
-            <h2 className="text-lg font-semibold">
-              <Link to={`/manhwa/${slug}`} className="hover:underline">
-                {detail?.title || slug.replace(/-/g, ' ')}
-              </Link>
-            </h2>
-            <select
-              value={chapter}
-              onChange={e => navigate(`/chapters/${slug}/${e.target.value}`)}
-              className="block mt-2 mb-2 w-full sm:hidden bg-gray-200 dark:bg-gray-800 rounded px-3 py-2 text-sm"
-              aria-label="Select chapter"
-            >
-              {Array.from({ length: totalChapters }, (_, i) => i + 1)
-                .reverse()
-                .map(cnum => (
-                  <option key={cnum} value={cnum}>
-                    Chapter {cnum}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          {/* bookmark / toggle */}
-          <div className="flex items-center gap-4">
-            <button className="px-4 py-2 border rounded bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
-              Toggle Reader
-            </button>
-            <button className="px-4 py-2 border rounded bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
-              Bookmark
-            </button>
-          </div>
-
-          {/* prev / next chapter */}
-          <div className="flex items-center gap-4">
-            {prevChap && (
-              <Link
-                to={`/chapters/${slug}/${prevChap}`}
-                className="flex items-center px-4 py-2 border rounded bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition"
-              >
-                <ChevronLeftIcon className="w-4 h-4 mr-1" /> Previous
-              </Link>
-            )}
-            <Link
-              to={`/chapters/${slug}/${nextChap}`}
-              className="flex items-center px-4 py-2 border rounded bg-blue-600 text-white hover:bg-blue-700 transition"
-            >
-              Next <ChevronRightIcon className="w-4 h-4 ml-1" />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* zoom controls */}
+      {/* zoom controls (always visible, corner‐locked) */}
       <div className="fixed bottom-4 left-4 flex items-center bg-gray-800 bg-opacity-75 rounded-lg overflow-hidden z-50">
         <button
           onClick={zoomOut}
@@ -186,6 +122,72 @@ export default function Reader() {
           +
         </button>
       </div>
+
+      {/* footer (hidden by default, fades in on hover) */}
+      <footer
+        className="
+          absolute bottom-0 inset-x-0
+          bg-gray-100 dark:bg-gray-900
+          border-t border-gray-700
+          px-4 py-3
+          opacity-0 group-hover:opacity-100
+          transition-opacity
+          pointer-events-none group-hover:pointer-events-auto
+        "
+      >
+        <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+          {/* Title & mobile chapter select */}
+          <div className="flex flex-col items-center sm:items-start text-center sm:text-left">
+            <h2 className="text-lg font-semibold">
+              <Link to={`/manhwa/${slug}`} className="hover:underline">
+                {detail?.title || slug.replace(/-/g, ' ')}
+              </Link>
+            </h2>
+            <select
+              value={chapter}
+              onChange={e => navigate(`/chapters/${slug}/${e.target.value}`)}
+              className="mt-2 mb-2 w-full sm:hidden bg-gray-200 dark:bg-gray-800 rounded px-3 py-2 text-sm"
+              aria-label="Select chapter"
+            >
+              {Array.from({ length: totalChapters }, (_, i) => i + 1)
+                .reverse()
+                .map(cnum => (
+                  <option key={cnum} value={cnum}>
+                    Chapter {cnum}
+                  </option>
+                ))}
+            </select>
+          </div>
+
+          {/* Toggle + Bookmark */}
+          <div className="flex items-center gap-4">
+            <button className="px-4 py-2 border rounded bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+              Toggle Reader
+            </button>
+            <button className="px-4 py-2 border rounded bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition">
+              Bookmark
+            </button>
+          </div>
+
+          {/* Prev / Next Chapter */}
+          <div className="flex items-center gap-4">
+            {prevChap && (
+              <Link
+                to={`/chapters/${slug}/${prevChap}`}
+                className="flex items-center px-4 py-2 border rounded bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+              >
+                <ChevronLeftIcon className="w-4 h-4 mr-1" /> Previous
+              </Link>
+            )}
+            <Link
+              to={`/chapters/${slug}/${nextChap}`}
+              className="flex items-center px-4 py-2 border rounded bg-blue-600 text-white hover:bg-blue-700 transition"
+            >
+              Next <ChevronRightIcon className="w-4 h-4 ml-1" />
+            </Link>
+          </div>
+        </div>
+      </footer>
     </main>
   )
 }
