@@ -35,7 +35,6 @@ export default function App() {
   }, [library])
 
   return (
-    <BrowserRouter>
       <div className="flex flex-col min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
         {/* pass dark-mode controls + library count into Navbar */}
         <Navbar
@@ -87,6 +86,5 @@ export default function App() {
 
         <ScrollToTop />
       </div>
-    </BrowserRouter>
   )
 }
