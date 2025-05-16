@@ -1,19 +1,20 @@
-import React, { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+// src/components/Navbar.jsx
+import React, { useState }       from 'react'
+import { Link, useNavigate }     from 'react-router-dom'
 import {
   MoonIcon,
   SunIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
-  BookmarkIcon,
+  BookmarkIcon                // ← import bookmark icon
 } from '@heroicons/react/24/solid'
 
 export default function Navbar({ darkMode, toggleDarkMode }) {
   const [searchOpen, setSearchOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const navigate = useNavigate()
+  const [query, setQuery]           = useState('')
+  const navigate                    = useNavigate()
 
-  const openSearch = () => {
+  const openSearch  = () => {
     setSearchOpen(true)
     setTimeout(() => document.getElementById('spotlight-input')?.focus(), 100)
   }
@@ -21,16 +22,15 @@ export default function Navbar({ darkMode, toggleDarkMode }) {
 
   const onSubmit = e => {
     e.preventDefault()
-    if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query.trim())}`)
-      closeSearch()
-    }
+    if (!query.trim()) return
+    navigate(`/search?q=${encodeURIComponent(query.trim())}`)
+    closeSearch()
   }
 
   return (
     <>
       <nav className="relative bg-gray-900 px-4 py-3 flex items-center justify-center">
-        {/* search icon on left */}
+        {/* Search button */}
         <button
           onClick={openSearch}
           className="absolute top-1/2 left-4 -translate-y-1/2 p-2 rounded-full hover:bg-gray-800 transition"
@@ -39,26 +39,30 @@ export default function Navbar({ darkMode, toggleDarkMode }) {
           <MagnifyingGlassIcon className="w-6 h-6 text-gray-200" />
         </button>
 
-        {/* centered logo */}
+        {/* Logo */}
         <Link to="/" className="text-2xl font-bold text-white">
           ajumma.
         </Link>
 
-        {/* library icon next to dark toggle */}
-        <div className="absolute top-1/2 right-12 -translate-y-1/2 flex space-x-2">
-          <Link to="/library" aria-label="Library">
-            <BookmarkIcon className="w-6 h-6 text-gray-200 hover:text-white transition" />
-          </Link>
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full hover:bg-gray-800 transition"
-            aria-label="Toggle dark mode"
-          >
-            {darkMode
-              ? <SunIcon className="w-6 h-6 text-gray-200" />
-              : <MoonIcon className="w-6 h-6 text-gray-200" />}
-          </button>
-        </div>
+        {/* Library button */}
+        <button
+          onClick={() => navigate('/library')}
+          className="absolute top-1/2 right-16 -translate-y-1/2 p-2 rounded-full hover:bg-gray-800 transition"
+          aria-label="Library"
+        >
+          <BookmarkIcon className="w-6 h-6 text-gray-200" />
+        </button>
+
+        {/* Dark/light toggle */}
+        <button
+          onClick={toggleDarkMode}
+          className="absolute top-1/2 right-4 -translate-y-1/2 p-2 rounded-full hover:bg-gray-800 transition"
+          aria-label="Toggle dark mode"
+        >
+          {darkMode
+            ? <SunIcon className="w-6 h-6 text-gray-200" />
+            : <MoonIcon className="w-6 h-6 text-gray-200" />}
+        </button>
       </nav>
 
       {/* Spotlight search overlay */}
@@ -77,7 +81,7 @@ export default function Navbar({ darkMode, toggleDarkMode }) {
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Search manhwa..."
+              placeholder="Search manhwa…"
               className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
             />
             <button
