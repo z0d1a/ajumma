@@ -1,29 +1,21 @@
-// src/components/Details.jsx
 import { Fragment, useEffect, useState } from 'react'
-import { useParams, Link }             from 'react-router-dom'
-import { Tab }                         from '@headlessui/react'
-import { StarIcon }                    from '@heroicons/react/24/solid'
-import { api }                         from '../services/api.js'
-import { useBookmarks }                from '../hooks/useBookmarks.js'
+import { useParams, Link }           from 'react-router-dom'
+import { Tab }                       from '@headlessui/react'
+import { StarIcon }                  from '@heroicons/react/24/solid'
+import { api }                       from '../services/api.js'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function Details() {
+export default function Details({ library, setLibrary }) {
   const { slug } = useParams()
-
-  // — local state for fetch calls —
   const [detail, setDetail]     = useState(null)
   const [chapters, setChapters] = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
 
-  // — bookmarks hook —
-  const { bookmarks, addBookmark, removeBookmark } = useBookmarks()
-  const inLibrary = bookmarks.some(m => m.slug === slug)
-
-  // — fetch metadata + chapters in parallel —
+  // fetch manhwa metadata + chapters
   useEffect(() => {
     setLoading(true)
     Promise.all([
@@ -38,21 +30,24 @@ export default function Details() {
       .finally(() => setLoading(false))
   }, [slug])
 
-  // — toggle in/out of localStorage library —
+  // determine if current slug is in library
+  const inLibrary = library.some(item => item.slug === slug)
   const toggleLibrary = () => {
     if (!detail) return
     if (inLibrary) {
-      removeBookmark(slug)
+      setLibrary(lib => lib.filter(item => item.slug !== slug))
     } else {
-      addBookmark({
-        slug,
-        title: detail.title,
-        cover_url: detail.cover_url
-      })
+      setLibrary(lib => [
+        ...lib,
+        {
+          slug,
+          title: detail.title,
+          cover_url: detail.cover_url
+        }
+      ])
     }
   }
 
-  // — loading & error states —
   if (loading) {
     return (
       <div className="h-64 flex items-center justify-center">
@@ -60,6 +55,7 @@ export default function Details() {
       </div>
     )
   }
+
   if (error) {
     return <p className="text-center text-red-500">{error}</p>
   }

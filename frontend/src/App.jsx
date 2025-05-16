@@ -1,41 +1,73 @@
 // src/App.jsx
-import React, { useEffect, useState } from 'react'
-import { Routes, Route }               from 'react-router-dom'
-import Navbar                          from './components/Navbar.jsx'
-import Home                            from './components/Home.jsx'
-import SearchPage                      from './components/SearchPage.jsx'
-import Details                         from './components/Details.jsx'
-import Reader                          from './components/Reader.jsx'
-import Library                         from './components/Library.jsx'
-import ScrollToTop                     from './components/ScrollToTop.jsx'
+import React from 'react'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from 'react-router-dom'
+
+import { useBookmarks } from './hooks/useBookmarks.js'
+
+import Navbar from './components/Navbar.jsx'
+import Home from './components/Home.jsx'
+import Details from './components/Details.jsx'
+import Reader from './components/Reader.jsx'
+import Library from './components/Library.jsx'
 
 export default function App() {
-  // — Dark mode setup —
-  const [dark, setDark] = useState(() => {
-    if (localStorage.theme === 'dark') return true
-    if (localStorage.theme === 'light') return false
-    return window.matchMedia('(prefers-color-scheme: dark)').matches
-  })
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', dark)
-    localStorage.theme = dark ? 'dark' : 'light'
-  }, [dark])
+  // useBookmarks returns { bookmarks, addBookmark, removeBookmark }
+  const {
+    bookmarks: library,
+    addBookmark,
+    removeBookmark,
+  } = useBookmarks()
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors">
-      <Navbar darkMode={dark} toggleDarkMode={() => setDark(d => !d)} />
+    <BrowserRouter>
+      <div className="flex flex-col h-screen">
+        {/* pass the current library size so Navbar can render a badge */}
+        <Navbar libraryCount={library.length} />
 
-      <main className="container mx-auto px-4 py-8">
-        <Routes>
-          <Route path="/"                  element={<Home />} />
-          <Route path="/search"            element={<SearchPage />} />
-          <Route path="/library"           element={<Library />} />
-          <Route path="/manhwa/:slug"      element={<Details />} />
-          <Route path="/chapters/:slug/:chap" element={<Reader />} />
-        </Routes>
-      </main>
+        {/* main content area */}
+        <div className="flex-1 overflow-y-auto">
+          <Routes>
+            <Route path="/" element={<Home />} />
 
-      <ScrollToTop />
-    </div>
+            {/* details needs library + add/remove */}
+            <Route
+              path="/manhwa/:slug"
+              element={
+                <Details
+                  library={library}
+                  addBookmark={addBookmark}
+                  removeBookmark={removeBookmark}
+                />
+              }
+            />
+
+            {/* chapter reader stays the same */}
+            <Route
+              path="/chapters/:slug/:chap"
+              element={<Reader />}
+            />
+
+            {/* library page */}
+            <Route
+              path="/library"
+              element={
+                <Library
+                  library={library}
+                  removeBookmark={removeBookmark}
+                />
+              }
+            />
+
+            {/* any unknown URL -> home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+      </div>
+    </BrowserRouter>
   )
 }
