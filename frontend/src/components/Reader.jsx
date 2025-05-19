@@ -50,7 +50,7 @@ export default function Reader({ history, setHistory }) {
       .catch(() => {})
   }, [slug])
 
-  // — record this chapter in history (normalize to array first) —
+  // — record this chapter in history (never crash if history is bad) —
   useEffect(() => {
     if (!detail) return
     const entry = {
@@ -80,7 +80,6 @@ export default function Reader({ history, setHistory }) {
       </div>
     )
   }
-
   if (error) {
     return (
       <div className="flex-1 flex items-center justify-center px-4">
@@ -106,7 +105,7 @@ export default function Reader({ history, setHistory }) {
               className="overflow-auto"
               style={{ maxHeight: 'calc(100vh - 200px)' }}
             >
-              {pages.map((p,i) => (
+              {pages.map((p, i) => (
                 <img
                   key={i}
                   src={p.url}
@@ -132,7 +131,9 @@ export default function Reader({ history, setHistory }) {
           className="p-2 hover:bg-gray-700 rounded transition"
           aria-label="Zoom out"
         >–</button>
-        <span className="w-12 text-center text-sm">{Math.round(zoom*100)}%</span>
+        <span className="w-12 text-center text-sm">
+          {Math.round(zoom * 100)}%
+        </span>
         <button
           onClick={zoomIn}
           className="p-2 hover:bg-gray-700 rounded transition"
@@ -148,7 +149,8 @@ export default function Reader({ history, setHistory }) {
             bg-white/10 backdrop-blur-sm
             dark:bg-gray-900/80
             border-t border-gray-700
-            text-gray-100 z-40
+            text-gray-100
+            z-40
           "
           onClick={e => e.stopPropagation()}
         >
@@ -160,15 +162,17 @@ export default function Reader({ history, setHistory }) {
                 to={`/manhwa/${slug}`}
                 className="text-lg font-semibold hover:underline"
               >
-                {detail?.title || slug.replace(/-/g,' ')}
+                {detail?.title || slug.replace(/-/g, ' ')}
               </Link>
               <select
                 value={chapter}
                 onChange={e => navigate(`/chapters/${slug}/${e.target.value}`)}
                 className="bg-gray-700 text-sm rounded border border-gray-600 px-3 py-1"
               >
-                {Array.from({ length: totalChapters }, (_,i) => i+1).map(num => (
-                  <option key={num} value={num}>Chapter {num}</option>
+                {Array.from({ length: totalChapters }, (_, i) => i + 1).map(num => (
+                  <option key={num} value={num}>
+                    Chapter {num}
+                  </option>
                 ))}
               </select>
             </div>
@@ -176,10 +180,12 @@ export default function Reader({ history, setHistory }) {
             {/* toggle & bookmark */}
             <div className="flex items-center space-x-4">
               <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
-                <ArrowsPointingOutIcon className="w-5 h-5"/> <span>Toggle</span>
+                <ArrowsPointingOutIcon className="w-5 h-5"/>
+                <span>Toggle</span>
               </button>
               <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
-                <BookmarkIcon className="w-5 h-5"/> <span>Bookmark</span>
+                <BookmarkIcon className="w-5 h-5"/>
+                <span>Bookmark</span>
               </button>
             </div>
 
@@ -190,14 +196,16 @@ export default function Reader({ history, setHistory }) {
                   to={`/chapters/${slug}/${prevChap}`}
                   className="flex items-center space-x-2 px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700 transition"
                 >
-                  <ChevronLeftIcon className="w-5 h-5"/> <span>Prev</span>
+                  <ChevronLeftIcon className="w-5 h-5"/>
+                  <span>Prev</span>
                 </Link>
               )}
               <Link
                 to={`/chapters/${slug}/${nextChap}`}
                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition"
               >
-                <span>Next</span> <ChevronRightIcon className="w-5 h-5"/>
+                <span>Next</span>
+                <ChevronRightIcon className="w-5 h-5"/>
               </Link>
             </div>
           </div>
