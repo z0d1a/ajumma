@@ -1,10 +1,11 @@
+// src/components/Details.jsx
 import { Fragment, useEffect, useState } from 'react'
-import { useParams, Link }           from 'react-router-dom'
-import { Tab }                       from '@headlessui/react'
-import { StarIcon }                  from '@heroicons/react/24/solid'
+import { useParams, Link } from 'react-router-dom'
+import { Tab }  from '@headlessui/react'
+import { StarIcon } from '@heroicons/react/24/solid'
 import { BookmarkIcon as BookmarkEmptyIcon } from '@heroicons/react/24/outline'
-import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
-import { api }                       from '../services/api.js'
+import { BookmarkIcon as BookmarkSolidIcon }  from '@heroicons/react/24/solid'
+import { api } from '../services/api.js'
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -16,6 +17,18 @@ export default function Details({ library, setLibrary }) {
   const [chapters, setChapters] = useState([])
   const [loading, setLoading]   = useState(true)
   const [error, setError]       = useState(null)
+
+  // for showing “Continue at Chapter …”
+  const [lastRead, setLastRead] = useState(null)
+  useEffect(() => {
+    try {
+      const hist = JSON.parse(localStorage.getItem('history')) || []
+      const entry = hist.find(e => e.slug === slug)
+      setLastRead(entry)
+    } catch {
+      setLastRead(null)
+    }
+  }, [slug])
 
   // fetch metadata & chapter list
   useEffect(() => {
@@ -42,7 +55,7 @@ export default function Details({ library, setLibrary }) {
       setLibrary(lib => lib.filter(item => item.slug !== slug))
     } else {
       setLibrary(lib => [
-        ...(lib || []),
+        ...(lib||[]),
         {
           slug,
           title: detail.title || slug.replace(/-/g,' '),
@@ -59,17 +72,14 @@ export default function Details({ library, setLibrary }) {
       </div>
     )
   }
-
   if (error) {
     return <p className="text-center text-red-500">{error}</p>
   }
-
-  // once loaded, guard against missing detail
   if (!detail) {
     return <p className="text-center text-gray-400">No detail to show.</p>
   }
 
-  // avoid crash if genres missing
+  // guard genres
   const genres = Array.isArray(detail.genres) ? detail.genres : []
 
   return (
@@ -77,12 +87,12 @@ export default function Details({ library, setLibrary }) {
       {/* blurred backdrop */}
       <div
         className="absolute inset-0 bg-cover bg-center filter blur-xl scale-105"
-        style={{ backgroundImage: `url(${detail.cover_url || ''})` }}
+        style={{ backgroundImage: `url(${detail.cover_url||''})` }}
       />
       <div className="absolute inset-0 bg-black/60" />
 
       <div className="relative max-w-5xl mx-auto px-4 py-12 text-white space-y-8">
-        {/* back & library button */}
+        {/* back & library */}
         <div className="flex items-center justify-between">
           <Link to="/" className="text-gray-300 hover:text-white">
             &larr; Back to Home
@@ -98,6 +108,18 @@ export default function Details({ library, setLibrary }) {
             }
           </button>
         </div>
+
+        {/* Continue button if we have lastRead */}
+        {lastRead && (
+          <div className="mb-4">
+            <Link
+              to={`/chapters/${slug}/${lastRead.chap}`}
+              className="inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Continue at Chapter {lastRead.chap}
+            </Link>
+          </div>
+        )}
 
         {/* cover + info */}
         <div className="md:flex md:space-x-8 items-start">
@@ -170,7 +192,6 @@ export default function Details({ library, setLibrary }) {
           </Tab.List>
 
           <Tab.Panels className="mt-6">
-            {/* chapters list */}
             <Tab.Panel>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {chapters.map(ch => (
@@ -187,8 +208,6 @@ export default function Details({ library, setLibrary }) {
                 ))}
               </div>
             </Tab.Panel>
-
-            {/* notices */}
             <Tab.Panel>
               <p className="text-gray-300">No notices at this time.</p>
             </Tab.Panel>
