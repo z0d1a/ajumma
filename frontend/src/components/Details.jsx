@@ -1,3 +1,4 @@
+// src/components/Details.jsx
 import { Fragment, useEffect, useState } from 'react'
 import { useParams, Link }           from 'react-router-dom'
 import { Tab }                       from '@headlessui/react'
@@ -35,9 +36,12 @@ export default function Details({ library, setLibrary }) {
   }, [slug])
 
   // library toggle
-  const inLibrary = Array.isArray(library) && library.some(item => item.slug === slug)
+  const inLibrary =
+    Array.isArray(library) && library.some(item => item.slug === slug)
+
   function toggleLibrary() {
     if (!detail) return
+
     if (inLibrary) {
       setLibrary(lib => lib.filter(item => item.slug !== slug))
     } else {
@@ -45,7 +49,7 @@ export default function Details({ library, setLibrary }) {
         ...(lib || []),
         {
           slug,
-          title: detail.title || slug.replace(/-/g,' '),
+          title: detail.title || slug.replace(/-/g, ' '),
           cover_url: detail.cover_url || ''
         }
       ])
@@ -64,12 +68,12 @@ export default function Details({ library, setLibrary }) {
     return <p className="text-center text-red-500">{error}</p>
   }
 
-  // once loaded, guard against missing detail
+  // guard if somehow detail is still null
   if (!detail) {
     return <p className="text-center text-gray-400">No detail to show.</p>
   }
 
-  // avoid crash if genres missing
+  // ensure genres is always an array
   const genres = Array.isArray(detail.genres) ? detail.genres : []
 
   return (
@@ -92,10 +96,11 @@ export default function Details({ library, setLibrary }) {
             aria-label={inLibrary ? 'Remove from Library' : 'Add to Library'}
             className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition"
           >
-            {inLibrary
-              ? <BookmarkSolidIcon className="w-6 h-6 text-yellow-300" />
-              : <BookmarkEmptyIcon className="w-6 h-6 text-gray-200" />
-            }
+            {inLibrary ? (
+              <BookmarkSolidIcon className="w-6 h-6 text-yellow-300" />
+            ) : (
+              <BookmarkEmptyIcon className="w-6 h-6 text-gray-200" />
+            )}
           </button>
         </div>
 
@@ -152,7 +157,7 @@ export default function Details({ library, setLibrary }) {
         {/* tabs */}
         <Tab.Group>
           <Tab.List className="flex space-x-4 border-b border-gray-600">
-            {['Chapters','Notices'].map(label => (
+            {['Chapters', 'Notices'].map(label => (
               <Tab
                 key={label}
                 className={({ selected }) =>

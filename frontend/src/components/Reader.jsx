@@ -9,7 +9,7 @@ import {
   BookmarkIcon,
 } from '@heroicons/react/24/outline'
 
-export default function Reader() {
+export default function Reader({ history, setHistory }) {
   const { slug, chap } = useParams()
   const navigate       = useNavigate()
   const chapter        = parseFloat(chap)
@@ -37,7 +37,7 @@ export default function Reader() {
       .finally(() => setLoading(false))
   }, [slug, chapter])
 
-  // fetch detail
+  // fetch detail + totalChapters
   useEffect(() => {
     if (!slug) return
     api.get(`?m=${encodeURIComponent(slug)}`)
@@ -49,13 +49,30 @@ export default function Reader() {
       .catch(() => {})
   }, [slug])
 
+  // record this chapter in history (once detail is loaded)
+  useEffect(() => {
+    if (!detail) return
+    setHistory(h => {
+      // remove any existing same entry
+      const filtered = h.filter(
+        entry => !(entry.slug === slug && entry.chapter === chapter)
+      )
+      // add new at front
+      const next = [
+        { slug, chapter, title: detail.title || slug.replace(/-/g,' ') },
+        ...filtered,
+      ]
+      return next.slice(0, 10)
+    })
+  }, [slug, chapter, detail, setHistory])
+
   const prevChap = chapter > 1 ? chapter - 1 : null
   const nextChap = chapter + 1
 
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-gray-300 dark:border-gray-600 border-t-transparent rounded-full animate-spin"/>
+        <div className="w-12 h-12 border-4 border-gray-300 dark:border-gray-600 border-t-transparent rounded-full animate-spin" />
         <p className="mt-4 text-gray-500 dark:text-gray-400">Loading…</p>
       </div>
     )
@@ -71,7 +88,7 @@ export default function Reader() {
   return (
     <div className="flex-1 flex flex-col bg-gray-900 text-gray-100">
 
-      {/* only this div toggles footer */}
+      {/* pages area (toggle footer on click) */}
       <div
         className="flex-1 overflow-auto scrollbar-hide"
         onClick={() => setFooterVisible(vis => !vis)}
@@ -81,12 +98,15 @@ export default function Reader() {
             className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl overflow-hidden"
             style={{ maxWidth: 550, width: '100%' }}
           >
-            <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-              {pages.map((p,i) => (
+            <div
+              className="overflow-auto"
+              style={{ maxHeight: 'calc(100vh - 200px)' }}
+            >
+              {pages.map((p, i) => (
                 <img
                   key={i}
                   src={p.url}
-                  alt={`Page ${i+1}`}
+                  alt={`Page ${i + 1}`}
                   loading="eager"
                   className="w-full object-contain"
                   style={{
@@ -107,16 +127,20 @@ export default function Reader() {
           onClick={zoomOut}
           className="p-2 hover:bg-gray-700 rounded transition"
           aria-label="Zoom out"
-        >–</button>
-        <span className="w-12 text-center text-sm">{Math.round(zoom*100)}%</span>
+        >
+          –
+        </button>
+        <span className="w-12 text-center text-sm">{Math.round(zoom * 100)}%</span>
         <button
           onClick={zoomIn}
           className="p-2 hover:bg-gray-700 rounded transition"
           aria-label="Zoom in"
-        >+</button>
+        >
+          +
+        </button>
       </div>
 
-      {/* footer */}
+      {/* footer (only when footerVisible) */}
       {footerVisible && (
         <footer
           className="
@@ -144,24 +168,24 @@ export default function Reader() {
                 onChange={e => navigate(`/chapters/${slug}/${e.target.value}`)}
                 className="bg-gray-700 text-sm rounded border border-gray-600 px-3 py-1"
               >
-                {Array.from({length: totalChapters},(_,i)=>i+1)
-                  .map(num => (
+                {Array.from({ length: totalChapters }, (_, i) => i + 1).map(
+                  num => (
                     <option key={num} value={num}>
                       Chapter {num}
                     </option>
-                  ))
-                }
+                  )
+                )}
               </select>
             </div>
 
             {/* toggle & bookmark */}
             <div className="flex items-center space-x-4">
               <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
-                <ArrowsPointingOutIcon className="w-5 h-5"/>
+                <ArrowsPointingOutIcon className="w-5 h-5" />
                 <span>Toggle</span>
               </button>
               <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
-                <BookmarkIcon className="w-5 h-5"/>
+                <BookmarkIcon className="w-5 h-5" />
                 <span>Bookmark</span>
               </button>
             </div>
@@ -173,7 +197,7 @@ export default function Reader() {
                   to={`/chapters/${slug}/${prevChap}`}
                   className="flex items-center space-x-2 px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700 transition"
                 >
-                  <ChevronLeftIcon className="w-5 h-5"/>
+                  <ChevronLeftIcon className="w-5 h-5" />
                   <span>Prev</span>
                 </Link>
               )}
@@ -182,7 +206,7 @@ export default function Reader() {
                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition"
               >
                 <span>Next</span>
-                <ChevronRightIcon className="w-5 h-5"/>
+                <ChevronRightIcon className="w-5 h-5" />
               </Link>
             </div>
           </div>
