@@ -14,57 +14,71 @@ export default function Reader({ history, setHistory }) {
   const navigate       = useNavigate()
   const chapter        = parseFloat(chap)
 
-  // state
-  const [pages, setPages]           = useState([])
-  const [detail, setDetail]         = useState(null)
-  const [totalChapters, setTotal]   = useState(0)
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState(null)
-  const [zoom, setZoom]             = useState(1)
+  // ——— state ———
+  const [pages, setPages]         = useState([])
+  const [detail, setDetail]       = useState(null)
+  const [totalChapters, setTotal] = useState(0)
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
+  const [zoom, setZoom]           = useState(1)
   const [footerVisible, setFooterVisible] = useState(false)
 
-  // zoom
+  // ——— zoom handlers ———
   const zoomIn  = () => setZoom(z => Math.min(2, +(z + 0.1).toFixed(1)))
   const zoomOut = () => setZoom(z => Math.max(0.5, +(z - 0.1).toFixed(1)))
 
-  // fetch pages
+  // ——— fetch pages ———
   useEffect(() => {
-    if (!slug || !chapter) return
+    if (!slug || isNaN(chapter)) return
     setLoading(true)
+    setError(null)
+
     api.get(`/page?m=${encodeURIComponent(slug)}&c=${chapter}`)
-      .then(res => setPages(Array.isArray(res.data) ? res.data : res))
+      .then(res => {
+        const arr = Array.isArray(res.data) ? res.data : res
+        setPages(arr)
+      })
       .catch(() => setError('Failed to load pages.'))
       .finally(() => setLoading(false))
   }, [slug, chapter])
 
-  // fetch detail + totalChapters
+  // ——— fetch series detail ———
   useEffect(() => {
     if (!slug) return
+
     api.get(`?m=${encodeURIComponent(slug)}`)
       .then(res => {
         const d = res.data ?? res
         setDetail(d)
         setTotal(d.chapters)
       })
-      .catch(() => {})
+      .catch(() => {
+        // no-op
+      })
   }, [slug])
 
-  // record this chapter in history (once detail is loaded)
+  // ——— record this chapter in history ———
   useEffect(() => {
     if (!detail) return
-    setHistory(h => {
-      // remove any existing same entry
-      const filtered = h.filter(
-        entry => !(entry.slug === slug && entry.chapter === chapter)
+
+    // build our new entry
+    const entry = {
+      slug,
+      title: detail.title || slug.replace(/-/g, ' '),
+      chap: chapter
+    }
+
+    setHistory(prev => {
+      // filter out any existing same slug+chap
+      const filtered = (prev || []).filter(
+        item => !(item.slug === slug && item.chap === chapter)
       )
-      // add new at front
-      const next = [
-        { slug, chapter, title: detail.title || slug.replace(/-/g,' ') },
-        ...filtered,
-      ]
-      return next.slice(0, 10)
+      // prepend
+      const updated = [entry, ...filtered]
+      // keep at most 10
+      return updated.slice(0, 10)
     })
-  }, [slug, chapter, detail, setHistory])
+  }, [detail, slug, chapter, setHistory])
 
   const prevChap = chapter > 1 ? chapter - 1 : null
   const nextChap = chapter + 1
@@ -77,6 +91,7 @@ export default function Reader({ history, setHistory }) {
       </div>
     )
   }
+
   if (error) {
     return (
       <div className="flex-1 flex items-center justify-center px-4">
@@ -88,7 +103,7 @@ export default function Reader({ history, setHistory }) {
   return (
     <div className="flex-1 flex flex-col bg-gray-900 text-gray-100">
 
-      {/* pages area (toggle footer on click) */}
+      {/* only this toggles footer */}
       <div
         className="flex-1 overflow-auto scrollbar-hide"
         onClick={() => setFooterVisible(vis => !vis)}
@@ -127,20 +142,18 @@ export default function Reader({ history, setHistory }) {
           onClick={zoomOut}
           className="p-2 hover:bg-gray-700 rounded transition"
           aria-label="Zoom out"
-        >
-          –
-        </button>
-        <span className="w-12 text-center text-sm">{Math.round(zoom * 100)}%</span>
+        >–</button>
+        <span className="w-12 text-center text-sm">
+          {Math.round(zoom * 100)}%
+        </span>
         <button
           onClick={zoomIn}
           className="p-2 hover:bg-gray-700 rounded transition"
           aria-label="Zoom in"
-        >
-          +
-        </button>
+        >+</button>
       </div>
 
-      {/* footer (only when footerVisible) */}
+      {/* footer */}
       {footerVisible && (
         <footer
           className="
@@ -161,7 +174,7 @@ export default function Reader({ history, setHistory }) {
                 to={`/manhwa/${slug}`}
                 className="text-lg font-semibold hover:underline"
               >
-                {detail?.title || slug.replace(/-/g,' ')}
+                {detail?.title || slug.replace(/-/g, ' ')}
               </Link>
               <select
                 value={chapter}
