@@ -15,12 +15,12 @@ export default function Reader({ history, setHistory }) {
   const chapter        = parseFloat(chap)
 
   // state
-  const [pages, setPages]             = useState([])
-  const [detail, setDetail]           = useState(null)
-  const [totalChapters, setTotal]     = useState(0)
-  const [loading, setLoading]         = useState(true)
-  const [error, setError]             = useState(null)
-  const [zoom, setZoom]               = useState(1)
+  const [pages, setPages]           = useState([])
+  const [detail, setDetail]         = useState(null)
+  const [totalChapters, setTotal]   = useState(0)
+  const [loading, setLoading]       = useState(true)
+  const [error, setError]           = useState(null)
+  const [zoom, setZoom]             = useState(1)
   const [footerVisible, setFooterVisible] = useState(false)
 
   // zoom
@@ -37,7 +37,7 @@ export default function Reader({ history, setHistory }) {
       .finally(() => setLoading(false))
   }, [slug, chapter])
 
-  // fetch detail
+  // fetch detail (title + totalChapters)
   useEffect(() => {
     if (!slug) return
     api.get(`?m=${encodeURIComponent(slug)}`)
@@ -49,16 +49,25 @@ export default function Reader({ history, setHistory }) {
       .catch(() => {})
   }, [slug])
 
-  // record history entry once chapter loads
-  useEffect(() => {
-    if (!loading && !error && detail) {
-      setHistory({ slug, chap: chapter, title: detail.title })
-    }
-    // only run when loading changes to false or slug/chap/detail change
-  }, [loading, error, slug, chapter, detail, setHistory])
-
   const prevChap = chapter > 1 ? chapter - 1 : null
   const nextChap = chapter + 1
+
+  // record current chapter in history
+  useEffect(() => {
+    if (!detail) return
+    setHistory(h => {
+      // build entry
+      const entry = {
+        slug,
+        title: detail.title || slug.replace(/-/g, ' '),
+        chap: chapter,
+      }
+      // remove any existing matching this slug+chap
+      const filtered = h.filter(item => !(item.slug === slug && item.chap === chapter))
+      // new list: this entry at front, then the rest
+      return [entry, ...filtered].slice(0, 10)
+    })
+  }, [slug, chapter, detail, setHistory])
 
   if (loading) {
     return (
@@ -90,7 +99,7 @@ export default function Reader({ history, setHistory }) {
             style={{ maxWidth: 550, width: '100%' }}
           >
             <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-              {pages.map((p,i) => (
+              {pages.map((p, i) => (
                 <img
                   key={i}
                   src={p.url}
@@ -152,7 +161,7 @@ export default function Reader({ history, setHistory }) {
                 onChange={e => navigate(`/chapters/${slug}/${e.target.value}`)}
                 className="bg-gray-700 text-sm rounded border border-gray-600 px-3 py-1"
               >
-                {Array.from({length: totalChapters},(_,i)=>i+1)
+                {Array.from({ length: totalChapters }, (_, i) => i+1)
                   .map(num => (
                     <option key={num} value={num}>
                       Chapter {num}
