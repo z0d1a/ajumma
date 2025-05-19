@@ -13,10 +13,12 @@ import ScrollToTop from './components/ScrollToTop.jsx'
 export default function App() {
   // ——— Dark mode setup ———
   const [dark, setDark] = useState(
-    () => localStorage.theme === 'dark'
-      || (!('theme' in localStorage)
-          && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    () =>
+      localStorage.theme === 'dark' ||
+      (!('theme' in localStorage) &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches)
   )
+
   useEffect(() => {
     document.documentElement.classList.toggle('dark', dark)
     localStorage.theme = dark ? 'dark' : 'light'
@@ -53,36 +55,38 @@ export default function App() {
 
       <main className="container mx-auto px-4 py-8 space-y-12">
         <Routes>
-          {/* pass history into Home */}
-          <Route path="/" element={
-            <Home
-              history={history}
-            />
-          }/>
+          {/* Home receives the history array */}
+          <Route
+            path="/"
+            element={<Home history={history} />}
+          />
 
           <Route path="/search" element={<SearchPage />} />
 
-          {/* inject library + setter into Details */}
-          <Route path="/manhwa/:slug" element={
-            <Details
-              library={library}
-              setLibrary={setLibrary}
-            />
-          }/>
-
-          {/* inject history setter into Reader */}
-          <Route path="/chapters/:slug/:chap" element={
-            <Reader
-              setHistory={setHistory}
-              history={history}
-            />
-          }/>
-
-          {/* library page */}
+          {/* Details page gets library + setter */}
           <Route
-            path="/library"
-            element={<Library />}
+            path="/manhwa/:slug"
+            element={
+              <Details
+                library={library}
+                setLibrary={setLibrary}
+              />
+            }
           />
+
+          {/* Reader gets history + setter */}
+          <Route
+            path="/chapters/:slug/:chap"
+            element={
+              <Reader
+                history={history}
+                setHistory={setHistory}
+              />
+            }
+          />
+
+          {/* Library page */}
+          <Route path="/library" element={<Library />} />
         </Routes>
       </main>
 
