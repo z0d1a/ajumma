@@ -9,7 +9,7 @@ import {
   BookmarkIcon,
 } from '@heroicons/react/24/outline'
 
-export default function Reader({ history, setHistory }) {
+export default function Reader() {
   const { slug, chap } = useParams()
   const navigate       = useNavigate()
   const chapter        = parseFloat(chap)
@@ -37,7 +37,7 @@ export default function Reader({ history, setHistory }) {
       .finally(() => setLoading(false))
   }, [slug, chapter])
 
-  // fetch detail (title + totalChapters)
+  // fetch detail
   useEffect(() => {
     if (!slug) return
     api.get(`?m=${encodeURIComponent(slug)}`)
@@ -51,23 +51,6 @@ export default function Reader({ history, setHistory }) {
 
   const prevChap = chapter > 1 ? chapter - 1 : null
   const nextChap = chapter + 1
-
-  // record current chapter in history
-  useEffect(() => {
-    if (!detail) return
-    setHistory(h => {
-      // build entry
-      const entry = {
-        slug,
-        title: detail.title || slug.replace(/-/g, ' '),
-        chap: chapter,
-      }
-      // remove any existing matching this slug+chap
-      const filtered = h.filter(item => !(item.slug === slug && item.chap === chapter))
-      // new list: this entry at front, then the rest
-      return [entry, ...filtered].slice(0, 10)
-    })
-  }, [slug, chapter, detail, setHistory])
 
   if (loading) {
     return (
@@ -99,7 +82,7 @@ export default function Reader({ history, setHistory }) {
             style={{ maxWidth: 550, width: '100%' }}
           >
             <div className="overflow-auto" style={{ maxHeight: 'calc(100vh - 200px)' }}>
-              {pages.map((p, i) => (
+              {pages.map((p,i) => (
                 <img
                   key={i}
                   src={p.url}
@@ -161,7 +144,7 @@ export default function Reader({ history, setHistory }) {
                 onChange={e => navigate(`/chapters/${slug}/${e.target.value}`)}
                 className="bg-gray-700 text-sm rounded border border-gray-600 px-3 py-1"
               >
-                {Array.from({ length: totalChapters }, (_, i) => i+1)
+                {Array.from({length: totalChapters},(_,i)=>i+1)
                   .map(num => (
                     <option key={num} value={num}>
                       Chapter {num}
