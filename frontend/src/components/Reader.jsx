@@ -14,7 +14,7 @@ export default function Reader({ history, setHistory }) {
   const navigate       = useNavigate()
   const chapter        = parseFloat(chap)
 
-  // ——— state ———
+  // — state —
   const [pages, setPages]         = useState([])
   const [detail, setDetail]       = useState(null)
   const [totalChapters, setTotal] = useState(0)
@@ -23,60 +23,49 @@ export default function Reader({ history, setHistory }) {
   const [zoom, setZoom]           = useState(1)
   const [footerVisible, setFooterVisible] = useState(false)
 
-  // ——— zoom handlers ———
+  // — zoom handlers —
   const zoomIn  = () => setZoom(z => Math.min(2, +(z + 0.1).toFixed(1)))
   const zoomOut = () => setZoom(z => Math.max(0.5, +(z - 0.1).toFixed(1)))
 
-  // ——— fetch pages ———
+  // — fetch pages —
   useEffect(() => {
     if (!slug || isNaN(chapter)) return
     setLoading(true)
     setError(null)
-
     api.get(`/page?m=${encodeURIComponent(slug)}&c=${chapter}`)
-      .then(res => {
-        const arr = Array.isArray(res.data) ? res.data : res
-        setPages(arr)
-      })
+      .then(res => setPages(Array.isArray(res.data) ? res.data : res))
       .catch(() => setError('Failed to load pages.'))
       .finally(() => setLoading(false))
   }, [slug, chapter])
 
-  // ——— fetch series detail ———
+  // — fetch series detail —
   useEffect(() => {
     if (!slug) return
-
     api.get(`?m=${encodeURIComponent(slug)}`)
       .then(res => {
         const d = res.data ?? res
         setDetail(d)
         setTotal(d.chapters)
       })
-      .catch(() => {
-        // no-op
-      })
+      .catch(() => {})
   }, [slug])
 
-  // ——— record this chapter in history ———
+  // — record this chapter in history (normalize to array first) —
   useEffect(() => {
     if (!detail) return
-
-    // build our new entry
     const entry = {
       slug,
       title: detail.title || slug.replace(/-/g, ' '),
       chap: chapter
     }
-
     setHistory(prev => {
-      // filter out any existing same slug+chap
-      const filtered = (prev || []).filter(
+      const arr = Array.isArray(prev) ? prev : []
+      // remove any existing same slug+chap
+      const filtered = arr.filter(
         item => !(item.slug === slug && item.chap === chapter)
       )
-      // prepend
-      const updated = [entry, ...filtered]
-      // keep at most 10
-      return updated.slice(0, 10)
+      // prepend and cap at 10
+      return [entry, ...filtered].slice(0, 10)
     })
   }, [detail, slug, chapter, setHistory])
 
@@ -86,7 +75,7 @@ export default function Reader({ history, setHistory }) {
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-gray-300 dark:border-gray-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-12 h-12 border-4 border-gray-300 dark:border-gray-600 border-t-transparent rounded-full animate-spin"/>
         <p className="mt-4 text-gray-500 dark:text-gray-400">Loading…</p>
       </div>
     )
@@ -103,7 +92,7 @@ export default function Reader({ history, setHistory }) {
   return (
     <div className="flex-1 flex flex-col bg-gray-900 text-gray-100">
 
-      {/* only this toggles footer */}
+      {/* toggles footer on click */}
       <div
         className="flex-1 overflow-auto scrollbar-hide"
         onClick={() => setFooterVisible(vis => !vis)}
@@ -117,11 +106,11 @@ export default function Reader({ history, setHistory }) {
               className="overflow-auto"
               style={{ maxHeight: 'calc(100vh - 200px)' }}
             >
-              {pages.map((p, i) => (
+              {pages.map((p,i) => (
                 <img
                   key={i}
                   src={p.url}
-                  alt={`Page ${i + 1}`}
+                  alt={`Page ${i+1}`}
                   loading="eager"
                   className="w-full object-contain"
                   style={{
@@ -143,9 +132,7 @@ export default function Reader({ history, setHistory }) {
           className="p-2 hover:bg-gray-700 rounded transition"
           aria-label="Zoom out"
         >–</button>
-        <span className="w-12 text-center text-sm">
-          {Math.round(zoom * 100)}%
-        </span>
+        <span className="w-12 text-center text-sm">{Math.round(zoom*100)}%</span>
         <button
           onClick={zoomIn}
           className="p-2 hover:bg-gray-700 rounded transition"
@@ -161,8 +148,7 @@ export default function Reader({ history, setHistory }) {
             bg-white/10 backdrop-blur-sm
             dark:bg-gray-900/80
             border-t border-gray-700
-            text-gray-100
-            z-40
+            text-gray-100 z-40
           "
           onClick={e => e.stopPropagation()}
         >
@@ -174,32 +160,26 @@ export default function Reader({ history, setHistory }) {
                 to={`/manhwa/${slug}`}
                 className="text-lg font-semibold hover:underline"
               >
-                {detail?.title || slug.replace(/-/g, ' ')}
+                {detail?.title || slug.replace(/-/g,' ')}
               </Link>
               <select
                 value={chapter}
                 onChange={e => navigate(`/chapters/${slug}/${e.target.value}`)}
                 className="bg-gray-700 text-sm rounded border border-gray-600 px-3 py-1"
               >
-                {Array.from({ length: totalChapters }, (_, i) => i + 1).map(
-                  num => (
-                    <option key={num} value={num}>
-                      Chapter {num}
-                    </option>
-                  )
-                )}
+                {Array.from({ length: totalChapters }, (_,i) => i+1).map(num => (
+                  <option key={num} value={num}>Chapter {num}</option>
+                ))}
               </select>
             </div>
 
             {/* toggle & bookmark */}
             <div className="flex items-center space-x-4">
               <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
-                <ArrowsPointingOutIcon className="w-5 h-5" />
-                <span>Toggle</span>
+                <ArrowsPointingOutIcon className="w-5 h-5"/> <span>Toggle</span>
               </button>
               <button className="flex items-center space-x-2 px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition">
-                <BookmarkIcon className="w-5 h-5" />
-                <span>Bookmark</span>
+                <BookmarkIcon className="w-5 h-5"/> <span>Bookmark</span>
               </button>
             </div>
 
@@ -210,16 +190,14 @@ export default function Reader({ history, setHistory }) {
                   to={`/chapters/${slug}/${prevChap}`}
                   className="flex items-center space-x-2 px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700 transition"
                 >
-                  <ChevronLeftIcon className="w-5 h-5" />
-                  <span>Prev</span>
+                  <ChevronLeftIcon className="w-5 h-5"/> <span>Prev</span>
                 </Link>
               )}
               <Link
                 to={`/chapters/${slug}/${nextChap}`}
                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition"
               >
-                <span>Next</span>
-                <ChevronRightIcon className="w-5 h-5" />
+                <span>Next</span> <ChevronRightIcon className="w-5 h-5"/>
               </Link>
             </div>
           </div>
